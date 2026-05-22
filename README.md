@@ -4,8 +4,8 @@ Network Ping Analyzer — инструмент для тестирования �
 network-scanner/  
 ├── network_scanner.py     # Основной скрипт  
 ├── requirements.txt       # Зависимости  
-├── setup.bat              # Запуск (Windows)  
-├── setup.sh               # Запуск (Linux/Mac)  
+├── start.bat              # Запуск (Windows)  
+├── start.sh               # Запуск (Linux/Mac)  
 │     
 └── README.md    
 
