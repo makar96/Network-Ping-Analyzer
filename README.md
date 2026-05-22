@@ -9,6 +9,10 @@ network-scanner/
 │     
 └── README.md    
 
+#### Запуск на windows: 
+1. Запустить setup.bat
+2. Предварительно проверить, что установлен python
+
 ### Начальный экран  
 <img width="452" height="443" alt="image" src="https://github.com/user-attachments/assets/0c0ac620-f029-4c0b-b586-342d9a01300f" />  
 
