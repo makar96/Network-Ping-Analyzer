@@ -59,12 +59,12 @@ class PingAnalyzer:
 
         self.host = input("Введи хост для анализа сети: ").lower()
         self.res_host = re.search(r"^(?:https?:\/\/)?([a-z0-9.-]+\.[a-z]{2,})?(\/[a-zA-Z0-9\D\/]+)$", self.host)
-
-        self.host_list.append(self.res_host.group(1))
-
+      
         if not self.res_host:
             print("\nОшибка: неверный формат хоста")
             return  
+        
+        self.host_list.append(self.res_host.group(1))
         
         print(f"Начинаю сканирование хоста {self.res_host.group(1)}")
         print("Нажми Ctrl+C для остановки\n")
@@ -195,7 +195,12 @@ class PingAnalyzer:
 
                         break
                     else:
-                        print("Введи введи верное число по номеру сервиса")            
+                        print("Введи введи верное число по номеру сервиса")   
+
+            #  HOST LIST
+    def list_host(self):
+        print("Список хостов")       
+        print(*self.host_list, sep="\n")        
 
      # /PING SCANNER  
     
@@ -300,11 +305,11 @@ class PingAnalyzer:
             else:
                 print("Введи введи верное число по номеру сервиса")
 
-    #  HOST LIST
-    def list_host(self):
-        print("Список хостов")
-        for i in list(self.host_list):        
-            print(*self.host_list)
+    # #  HOST LIST
+    # def list_host(self):
+    #     print("Список хостов")
+    #     for i in list(self.host_list):        
+    #         print(*self.host_list)
 
 
 if __name__ == "__main__":
