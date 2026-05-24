@@ -13,6 +13,7 @@ import openpyxl # для работы с xlsx
 class PingAnalyzer:
     def __init__(self):
 
+        # Атрибуты узла
         self.time_list = []
         self.ping_list = []
         self.seconds_list = []
@@ -24,6 +25,11 @@ class PingAnalyzer:
         self.bad_packages = 0
         self.breaking_connection = {}
         self.host = None
+
+        # Атрибуты для контроля
+        self.control_host = "8.8.8.8"  # Google DNS
+        
+
         
 
     def greeting(self): 
@@ -36,6 +42,10 @@ class PingAnalyzer:
 
         self.host = input("Введи хост для анализа сети: ").lower()
         self.res = re.search(r"^(?:https?:\/\/)?([a-z0-9.-]+\.[a-z]{2,})?(\/[a-zA-Z0-9\D\/]+)$", self.host)
+
+        if not self.res:
+            print("\nОшибка: неверный формат хоста")
+            return  
         
         print(f"Начинаю сканирование хоста {self.res.group(1)}")
         print("Нажми Ctrl+C для остановки\n")
@@ -60,34 +70,34 @@ class PingAnalyzer:
 
                     self.ping_log[current_time] = response_time
 
-                    if len(self.ping_list) >= 5:
-                        average_time = sum(self.ping_list[-5:])/5
+                    if len(self.ping_list) >= 10:
+                        average_time = sum(self.ping_list[-10:])/10
 
                         if response_time > average_time * 2: # сначала САМОЕ строгое условие
-                            print(f"{current_time} ❗КРИТИЧЕСКОЕ ПАДЕНИЕ {self.res.group(1)}: {response_time:.3f} сек")
+                            print(f"{current_time} ❗КРИТИЧЕСКОЕ ПАДЕНИЕ {self.res.group(1)}: {response_time:.4f} сек")
 
                             self.bad_time[current_time] = response_time
                             self.bad_packages += 1
 
                         elif response_time > average_time * 1.3:  # затем более слабое и т.д.
                             percent = ((average_time - response_time) / average_time) * 100
-                            print(f"{current_time} 📉 Падение скорости {self.res.group(1)} на {percent:.0f}%: {response_time:.3f} сек")
+                            print(f"{current_time} 📉 Падение скорости {self.res.group(1)} на {percent:.0f}%: {response_time:.4f} сек")
                         
                         elif response_time < average_time * 0.7:
                             percent = ((average_time - response_time) / average_time) * 100
-                            print(f"{current_time} 📈 Скачок скорости {self.res.group(1)} на {percent:.0f}%: {response_time:.3f} сек")            
+                            print(f"{current_time} 📈 Скачок скорости {self.res.group(1)} на {percent:.0f}%: {response_time:.4f} сек")            
                         
                         else: # если никакое условие не было выполнено, то else
-                            print(f"{current_time} ✅ Время ответа {self.res.group(1)}: {response_time:.3f} сек")
+                            print(f"{current_time} ✅ Время ответа {self.res.group(1)}: {response_time:.4f} сек")
                     
                     else:
-                        print(f"{current_time} ✅ Время ответа {self.res.group(1)}: {response_time:.3f} сек")
+                        print(f"{current_time} ✅ Время ответа {self.res.group(1)}: {response_time:.4f} сек")
 
                 time.sleep(2)
 
         except KeyboardInterrupt:
             print("\n\nПингование остановлено пользователем")
-            
+
 
     # STATISTICS
             print("\n" + "="*40)
@@ -125,7 +135,7 @@ class PingAnalyzer:
                 else:
                     print("✅ Разрывов соединений не было")
 
-                print("\n" + "="*40)   
+                print("\n" + "="*40)  
 
 
                 # MENU
@@ -137,11 +147,16 @@ class PingAnalyzer:
                     print("4. Выгрузить отчет в xlsx")
                     print("5. Вернуться к сервисам \n")
 
-                # CHOICE
                 while True:
                     action_result()
                     print("\n" + "-"*40)
-                    choice = int(input("Действие: "))
+
+                    try:
+                        choice = int(input("Действие: "))
+                    except ValueError:
+                        print("Введи корректное число")
+                        continue
+                    
                     print("\n" + "-"*40)
 
                     if choice == 1:
@@ -158,11 +173,16 @@ class PingAnalyzer:
 
                         break
                     else:
-                        print("Введи введи верное число по номеру сервиса")  
+                        print("Введи введи верное число по номеру сервиса")            
 
-
+     # /PING SCANNER  
+    
     # DIAGRAMM
     def chart(self):
+
+        if not self.ping_list:
+            print("Нет данных для построения графика")
+            return
         
         total_points = self.all_packages
         max_labels = 15
@@ -190,7 +210,7 @@ class PingAnalyzer:
     def pie_chart(self):
 
         value = [self.all_packages, self.bad_packages, self.losses]
-        labels = ["Всего пакетов", "Критические падения", "Разрывы соедиения"] 
+        labels = ["Всего пакетов", "Критические падения", "Разрывы соединения"] 
         colors = ['green', 'yellow', 'red']           
 
         # plt.style.use('seaborn-darkgrid')
@@ -223,8 +243,6 @@ class PingAnalyzer:
         print('Отчет выгружен в директорию со скриптом')                
         print("\n" + "-"*40) 
 
-
-    # /PING SCANNER
 
     # NETWORK SPEED
     def network_speed(self):
@@ -259,10 +277,6 @@ class PingAnalyzer:
                 break
             else:
                 print("Введи введи верное число по номеру сервиса")
-
-
-
-
 
 
 if __name__ == "__main__":
