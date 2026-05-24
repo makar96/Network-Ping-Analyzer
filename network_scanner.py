@@ -3,10 +3,10 @@ from datetime import datetime
 import time
 import re
 import art
-import math # для округления шага
-import matplotlib.pyplot as plt # построение графиков и диаграмм
+import math # округления шага
+import matplotlib.pyplot as plt # графики и диаграммы
 import pandas as pd 
-import openpyxl # для работы с xlsx
+import openpyxl # xlsx
 # import numpy as np
 
 
@@ -14,6 +14,7 @@ class PingAnalyzer:
     def __init__(self):
 
         # Атрибуты основного хоста
+        self.host_list = []
         self.time_list = []
         self.ping_list = []
         self.seconds_list = []
@@ -27,9 +28,9 @@ class PingAnalyzer:
         self.host = None
 
         # Атрибуты для контрольного хоста
-        self.control_host = "8.8.8.8"  # Google DNS
-        self.control_breaking_connection = {}
-        self.control_ping_list = []
+        # self.control_host = "8.8.8.8"  # Google DNS
+        # self.control_breaking_connection = {}
+        # self.control_ping_list = []
 
 
     # ANALYSE CONTROL HOST
@@ -48,22 +49,24 @@ class PingAnalyzer:
     #             self.breaking_connection[current_time] = response_time    
         
 
-    # def greeting(self): 
-    #     art.tprint("NETWORK\nPING\nANALIZER", font="small")
-    #     print("by Makar Bolovintsev")       
+    def greeting(self): 
+        art.tprint("NETWORK\nPING\nANALIZER", font="small")
+        print("by Makar Bolovintsev")       
 
 
     # PING SCANNER
     def ping_scanner(self):
 
         self.host = input("Введи хост для анализа сети: ").lower()
-        self.res = re.search(r"^(?:https?:\/\/)?([a-z0-9.-]+\.[a-z]{2,})?(\/[a-zA-Z0-9\D\/]+)$", self.host)
+        self.res_host = re.search(r"^(?:https?:\/\/)?([a-z0-9.-]+\.[a-z]{2,})?(\/[a-zA-Z0-9\D\/]+)$", self.host)
 
-        if not self.res:
+        self.host_list.append(self.res_host.group(1))
+
+        if not self.res_host:
             print("\nОшибка: неверный формат хоста")
             return  
         
-        print(f"Начинаю сканирование хоста {self.res.group(1)}")
+        print(f"Начинаю сканирование хоста {self.res_host.group(1)}")
         print("Нажми Ctrl+C для остановки\n")
 
         try:
@@ -71,13 +74,13 @@ class PingAnalyzer:
 
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 seconds = datetime.now().timestamp()
-                response_time = ping(self.res.group(1))
+                response_time = ping(self.res_host.group(1))
 
                 self.all_packages += 1
 
                 if response_time is None:
                     self.losses += 1
-                    print(f"{current_time} ❌ Нет соединения с {self.res.group(1)}: ({self.losses}/{self.all_packages})")
+                    print(f"{current_time} ❌ Нет соединения с {self.res_host.group(1)}: ({self.losses}/{self.all_packages})")
                     self.breaking_connection[current_time] = response_time
                 else:
                     self.time_list.append(current_time)
@@ -90,24 +93,24 @@ class PingAnalyzer:
                         average_time = sum(self.ping_list[-10:])/10
 
                         if response_time > average_time * 2: # сначала САМОЕ строгое условие
-                            print(f"{current_time} ❗КРИТИЧЕСКОЕ ПАДЕНИЕ {self.res.group(1)}: {response_time:.4f} сек")
+                            print(f"{current_time} ❗КРИТИЧЕСКОЕ ПАДЕНИЕ {self.res_host.group(1)}: {response_time:.4f} сек")
 
                             self.bad_time[current_time] = response_time
                             self.bad_packages += 1
 
                         elif response_time > average_time * 1.3:  # затем более слабое и т.д.
                             percent = ((average_time - response_time) / average_time) * 100
-                            print(f"{current_time} 📉 Падение скорости {self.res.group(1)} на {percent:.0f}%: {response_time:.4f} сек")
+                            print(f"{current_time} 📉 Падение скорости {self.res_host.group(1)} на {percent:.0f}%: {response_time:.4f} сек")
                         
                         elif response_time < average_time * 0.7:
                             percent = ((average_time - response_time) / average_time) * 100
-                            print(f"{current_time} 📈 Скачок скорости {self.res.group(1)} на {percent:.0f}%: {response_time:.4f} сек")            
+                            print(f"{current_time} 📈 Скачок скорости {self.res_host.group(1)} на {percent:.0f}%: {response_time:.4f} сек")            
                         
                         else: # если никакое условие не было выполнено, то else
-                            print(f"{current_time} ✅ Время ответа {self.res.group(1)}: {response_time:.4f} сек")
+                            print(f"{current_time} ✅ Время ответа {self.res_host.group(1)}: {response_time:.4f} сек")
                     
                     else:
-                        print(f"{current_time} ✅ Время ответа {self.res.group(1)}: {response_time:.4f} сек")
+                        print(f"{current_time} ✅ Время ответа {self.res_host.group(1)}: {response_time:.4f} сек")
 
                 time.sleep(2)
 
@@ -117,7 +120,7 @@ class PingAnalyzer:
 
     # STATISTICS
             print("\n" + "="*40)
-            print(f"📊 СТАТИСТИКА ПО {self.res.group(1).upper()}:")
+            print(f"📊 СТАТИСТИКА ПО {self.res_host.group(1).upper()}:")
             print("\n" + "="*40)
 
             print(f"📅 Начало анализа: {''.join(map(str, self.time_list[:1]))} | Конец анализа: {''.join(map(str, self.time_list[-1:]))}")
@@ -156,12 +159,13 @@ class PingAnalyzer:
 
                 # MENU
                 def action_result():
-                    print("✔️ Действие с результатом \n")
+                    print("\n✔️ Действие с результатом\n")
                     print("1. Получить график замеров")
                     print("2. Получить груговую диаграмму происшествий")
                     print("3. Выгрузить отчет в csv")
                     print("4. Выгрузить отчет в xlsx")
-                    print("5. Вернуться к сервисам \n")
+                    print("5. Открыть список хостов")
+                    print("6. Вернуться к сервисам \n")
 
                 while True:
                     action_result()
@@ -184,6 +188,8 @@ class PingAnalyzer:
                     elif choice == 4:
                         self.export_xlsx()
                     elif choice == 5:
+                        self.list_host()
+                    elif choice == 6:
                         print("Выход")
                         print("\n" + "-"*40)
 
@@ -217,7 +223,7 @@ class PingAnalyzer:
         plt.style.use('ggplot') # Популярные стили: 'ggplot', 'seaborn', 'dark_background', 'bmh'
 
         plt.plot(x, y, color='red', marker='*', markersize=7, alpha=0.8)
-        plt.title(f'Статистика {self.res.group(1)}')
+        plt.title(f'Статистика {self.res_host.group(1)}')
         plt.xlabel('Время соединения', fontsize=5)
         plt.ylabel('Время ответа')
         plt.show()
@@ -231,9 +237,9 @@ class PingAnalyzer:
 
         # plt.style.use('seaborn-darkgrid')
         plt.pie(value, labels=None, autopct='%1.1f%%', colors=colors, startangle=90) # Убираю подписи, чтобы не мешали
-        plt.title(f'Статистика {self.res.group(1)}')
+        plt.title(f'Статистика {self.res_host.group(1)}')
 
-        # Отедбльная легенда
+        # Отдельная легенда
         plt.legend(labels, title="Легенда", loc="right", bbox_to_anchor=(0.5, -0.1, 0.5, 0.1))
 
         plt.axis('equal') # чтобы круг не растягивался в овал
@@ -293,6 +299,12 @@ class PingAnalyzer:
                 break
             else:
                 print("Введи введи верное число по номеру сервиса")
+
+    #  HOST LIST
+    def list_host(self):
+        print("Список хостов")
+        for i in list(self.host_list):        
+            print(*self.host_list)
 
 
 if __name__ == "__main__":
