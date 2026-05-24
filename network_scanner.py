@@ -13,7 +13,7 @@ import openpyxl # для работы с xlsx
 class PingAnalyzer:
     def __init__(self):
 
-        # Атрибуты узла
+        # Атрибуты основного хоста
         self.time_list = []
         self.ping_list = []
         self.seconds_list = []
@@ -26,15 +26,31 @@ class PingAnalyzer:
         self.breaking_connection = {}
         self.host = None
 
-        # Атрибуты для контроля
+        # Атрибуты для контрольного хоста
         self.control_host = "8.8.8.8"  # Google DNS
+        self.control_breaking_connection = {}
+        self.control_ping_list = []
+
+
+    # ANALYSE CONTROL HOST
+
+    # def monitor_network(self):
+
+    #     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #     seconds = datetime.now().timestamp()
+    #     response_time = ping(self.res.group(1))
+
+    #     try:
+    #         while True:
+    #             response_control = ping(self.control_host)
+
+    #         if response_control is None:
+    #             self.breaking_connection[current_time] = response_time    
         
 
-        
-
-    def greeting(self): 
-        art.tprint("NETWORK\nPING\nANALIZER", font="small")
-        print("by Makar Bolovintsev")       
+    # def greeting(self): 
+    #     art.tprint("NETWORK\nPING\nANALIZER", font="small")
+    #     print("by Makar Bolovintsev")       
 
 
     # PING SCANNER
