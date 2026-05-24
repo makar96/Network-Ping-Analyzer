@@ -305,11 +305,6 @@ class PingAnalyzer:
             else:
                 print("Введи введи верное число по номеру сервиса")
 
-    # #  HOST LIST
-    # def list_host(self):
-    #     print("Список хостов")
-    #     for i in list(self.host_list):        
-    #         print(*self.host_list)
 
 
 if __name__ == "__main__":
